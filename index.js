@@ -8,6 +8,28 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 1900);
 
   initCamera();
+
+  if (isMobile) {
+    const flipBtn = document.createElement('button');
+    flipBtn.className = 'flip-camera-btn';
+    flipBtn.title = 'Flip Camera';
+    flipBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 7H4M4 7l3-3M4 7l3 3M4 17h16M16 17l3 3M16 17l3-3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>Flip`;
+    flipBtn.addEventListener('click', flipCamera);
+
+    const cardHeader = document.querySelector('.card-header');
+    const select = document.getElementById('numPhotos');
+    cardHeader.insertBefore(flipBtn, select);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Enter' || e.code === 'VolumeUp' || e.code === 'VolumeDown') {
+      e.preventDefault();
+      const btn = document.getElementById('captureBtn');
+      if (!btn.disabled) takePhoto();
+    }
+  });
 });
 
 const themeToggle = document.getElementById('themeToggle');
@@ -34,17 +56,6 @@ let stream = null;
 let currentFacingMode = 'user';
 
 const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1);
-
-if (isMobile) {
-  const flipBtn = document.createElement('button');
-  flipBtn.className = 'flip-camera-btn';
-  flipBtn.title = 'Flip Camera';
-  flipBtn.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M20 7H4M4 7l3-3M4 7l3 3M4 17h16M16 17l3 3M16 17l3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>`;
-  flipBtn.addEventListener('click', flipCamera);
-  document.querySelector('.capture-overlay').appendChild(flipBtn);
-}
 
 async function initCamera(facingMode = 'user') {
   if (stream) {
