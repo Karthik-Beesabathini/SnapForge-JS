@@ -1,4 +1,3 @@
-
 document.body.classList.add('loading');
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -7,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     preloader.classList.add('hidden');
     document.body.classList.remove('loading');
   }, 1900);
-
 
   initCamera();
 });
@@ -30,35 +28,51 @@ themeToggle.addEventListener('change', () => {
   }
 });
 
-
 const video = document.getElementById('livePreview');
 const captureCanvas = document.getElementById('captureCanvas');
 let stream = null;
+let currentFacingMode = 'user';
 
-async function initCamera() {
+const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1);
+
+if (isMobile) {
+  const flipBtn = document.createElement('button');
+  flipBtn.className = 'flip-camera-btn';
+  flipBtn.title = 'Flip Camera';
+  flipBtn.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 7H4M4 7l3-3M4 7l3 3M4 17h16M16 17l3 3M16 17l3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+  flipBtn.addEventListener('click', flipCamera);
+  document.querySelector('.capture-overlay').appendChild(flipBtn);
+}
+
+async function initCamera(facingMode = 'user') {
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+  }
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+      video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
       audio: false
     });
     video.srcObject = stream;
+    video.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
   } catch (err) {
     console.error('Camera error:', err);
     alert('Could not access camera. Please allow camera permissions and try again.');
   }
 }
 
+async function flipCamera() {
+  currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+  await initCamera(currentFacingMode);
+}
 
 function captureFrame() {
   const ctx = captureCanvas.getContext('2d');
-  captureCanvas.width  = video.videoWidth;
+  captureCanvas.width = video.videoWidth;
   captureCanvas.height = video.videoHeight;
-
-  ctx.translate(captureCanvas.width, 0);
-  ctx.scale(-1, 1);
   ctx.drawImage(video, 0, 0, captureCanvas.width, captureCanvas.height);
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-
 
   return new Promise((resolve) => {
     const img = new Image();
@@ -111,7 +125,6 @@ function captureSequence(numPhotos, photoIndex) {
       clearInterval(countdownInterval);
       countdownDiv.style.display = 'none';
 
-
       const flash = document.getElementById('flash');
       flash.classList.add('active');
       setTimeout(() => flash.classList.remove('active'), 300);
@@ -124,7 +137,6 @@ function captureSequence(numPhotos, photoIndex) {
     }
   }, 1000);
 }
-
 
 function makeCollage(images) {
   if (images.length === 0) return;

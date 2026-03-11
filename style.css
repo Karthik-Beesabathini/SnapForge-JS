@@ -154,6 +154,39 @@ body {
   opacity: 0.7;
 }
 
+.flip-camera-btn {
+  display: none;
+}
+
+@media (pointer: coarse), (hover: none) {
+  .flip-camera-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    transition: background-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
+  }
+
+  .flip-camera-btn:hover {
+    background-color: var(--button-hover);
+    transform: scale(1.08);
+  }
+
+  .flip-camera-btn:active {
+    transform: scale(0.95);
+  }
+}
+
 .capture-ring-btn:hover:not(:disabled) {
   opacity: 1;
   transform: scale(1.08);
