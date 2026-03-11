@@ -30,6 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!btn.disabled) takePhoto();
     }
   });
+
+  document.getElementById('borderToggle').addEventListener('change', (e) => {
+    document.querySelector('.border-toggle-text').style.opacity = e.target.checked ? '1' : '0.45';
+  });
 });
 
 const themeToggle = document.getElementById('themeToggle');
@@ -157,18 +161,69 @@ function makeCollage(images) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
 
+  const bordersOn = document.getElementById('borderToggle').checked;
+  const gap = bordersOn ? 18 : 0;
+  const radius = bordersOn ? 22 : 0;
+  const bg = '#ffffff';
+
+  function roundedImage(img, x, y, iw, ih) {
+    ctx.save();
+    ctx.beginPath();
+    if (radius > 0) {
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + iw - radius, y);
+      ctx.quadraticCurveTo(x + iw, y, x + iw, y + radius);
+      ctx.lineTo(x + iw, y + ih - radius);
+      ctx.quadraticCurveTo(x + iw, y + ih, x + iw - radius, y + ih);
+      ctx.lineTo(x + radius, y + ih);
+      ctx.quadraticCurveTo(x, y + ih, x, y + ih - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+    } else {
+      ctx.rect(x, y, iw, ih);
+    }
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(img, x, y, iw, ih);
+    ctx.restore();
+  }
+
   if (count === 6) {
-    canvas.width = w * 3; canvas.height = h * 2;
-    images.forEach((img, i) => ctx.drawImage(img, (i % 3) * w, Math.floor(i / 3) * h, w, h));
+    canvas.width  = w * 3 + gap * 4;
+    canvas.height = h * 2 + gap * 3;
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    images.forEach((img, i) => {
+      const col = i % 3;
+      const row = Math.floor(i / 3);
+      roundedImage(img, gap + col * (w + gap), gap + row * (h + gap), w, h);
+    });
   } else if (count === 4) {
-    canvas.width = w * 2; canvas.height = h * 2;
-    images.forEach((img, i) => ctx.drawImage(img, (i % 2) * w, Math.floor(i / 2) * h, w, h));
+    canvas.width  = w * 2 + gap * 3;
+    canvas.height = h * 2 + gap * 3;
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    images.forEach((img, i) => {
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      roundedImage(img, gap + col * (w + gap), gap + row * (h + gap), w, h);
+    });
   } else if (count === 3) {
-    canvas.width = w * 3; canvas.height = h;
-    images.forEach((img, i) => ctx.drawImage(img, i * w, 0, w, h));
+    canvas.width  = w * 3 + gap * 4;
+    canvas.height = h + gap * 2;
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    images.forEach((img, i) => {
+      roundedImage(img, gap + i * (w + gap), gap, w, h);
+    });
   } else if (count === 2) {
-    canvas.width = w * 2; canvas.height = h;
-    images.forEach((img, i) => ctx.drawImage(img, i * w, 0, w, h));
+    canvas.width  = w * 2 + gap * 3;
+    canvas.height = h + gap * 2;
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    images.forEach((img, i) => {
+      roundedImage(img, gap + i * (w + gap), gap, w, h);
+    });
   }
 
   const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
